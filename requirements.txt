@@ -24,6 +24,7 @@ gTTS>=2.4.0
 # Backend API & Web Server
 flask>=3.0.0
 flask-cors>=4.0.0
+gunicorn>=21.2.0
 
 # Dataset Ingestion
 kagglehub>=0.2.0

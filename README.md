@@ -161,3 +161,37 @@ Open **`http://localhost:5001`** in your browser.
 - Use your laptop webcam or click the pre-loaded **Dataset Quick Chips** (🥭 Mango Anthracnose, 🌺 Hibiscus Blight, 🌱 Healthy leaves).
 - Hit **"SCAN LEAF"** to see ResNet18 feature extraction -> PCA 4D -> PennyLane 4-Qubit VQC execution in real time!
 - Hit **"SPEAK RESULT"** to listen to the sweet girl voice explanation.
+
+---
+
+## 🌐 Deployment Guide
+
+### Option 1: Live Public HTTPS Demo
+KisanQ is served live with end-to-end SSL encryption:
+- **Live URL**: [https://adaptor-carlos-generate-bar.trycloudflare.com](https://adaptor-carlos-generate-bar.trycloudflare.com)
+
+### Option 2: 1-Click Cloud Deployment (Render.com)
+The repository includes a production-ready `render.yaml` blueprint:
+1. Log in to [Render.com](https://render.com) and link your GitHub account.
+2. Click **New +** -> **Blueprint**.
+3. Select this repository: `durgaanjalisimmalapudi-source/KisanQ`.
+4. Render will automatically detect `render.yaml`, install dependencies, and launch Gunicorn with 4 concurrent worker threads.
+
+### Option 3: Docker / Container Deployment
+Deploy anywhere with Docker or Docker Compose:
+```bash
+# Build and run with Docker Compose
+docker compose up --build -d
+
+# Or build standalone container
+docker build -t kisanq-doctor .
+docker run -p 5001:5001 -e PORT=5001 kisanq-doctor
+```
+
+### Option 4: Raspberry Pi 5 Edge Kiosk Service
+To run as an automatic boot daemon on Raspberry Pi OS:
+```bash
+sudo cp hardware/kisanq.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now kisanq.service
+```

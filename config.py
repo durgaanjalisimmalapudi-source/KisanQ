@@ -72,6 +72,6 @@ HARDWARE_CONFIG = {
 }
 
 # Web Server Settings
-SERVER_HOST = "0.0.0.0"
-SERVER_PORT = 5001
-DEBUG = False
+SERVER_HOST = os.environ.get("HOST", "0.0.0.0")
+SERVER_PORT = int(os.environ.get("PORT", 5001))
+DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1")

@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  kisanq:
+    build: .
+    container_name: kisanq-crop-doctor
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - HOST=0.0.0.0
+      - DEBUG=False
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./database:/app/database
