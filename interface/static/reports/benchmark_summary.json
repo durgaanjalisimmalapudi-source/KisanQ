@@ -1,0 +1,27 @@
+{
+  "metrics": {
+    "Accuracy (%)": {
+      "Classical": 100.0,
+      "Quantum_Hybrid": 95.56
+    },
+    "Macro F1 (%)": {
+      "Classical": 100.0,
+      "Quantum_Hybrid": 95.47
+    },
+    "Latency (ms)": {
+      "Classical": 0.19,
+      "Quantum_Hybrid": 0.2
+    },
+    "Classification Params": {
+      "Classical": 328707,
+      "Quantum_Hybrid": 23
+    }
+  },
+  "scientific_findings": [
+    "Classical MobileNetV2 achieved 100.0% accuracy leveraging all 1280 deep feature dimensions.",
+    "Experimental 4-Qubit VQC achieved 95.56% accuracy using extreme 4-dimensional PCA compression.",
+    "Quantum classification stage utilizes only 23 parameters vs. 328,707 classical parameters (a >14,000x parameter reduction).",
+    "Classical simulation latency is 0.2 ms due to statevector/matrix multiplication on classical hardware.",
+    "Honest Conclusion: No quantum advantage is claimed. The system successfully demonstrates a working hybrid quantum-classical transfer pipeline on genuine leaf data."
+  ]
+}

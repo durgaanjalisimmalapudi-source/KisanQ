@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KisanQ – Smart Crop Doctor | ResNet18 & PennyLane Hybrid Quantum System</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Inter:wght@400;500;600;700;800&family=Mandali&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Farmer Device Bar -->
+  <header class="device-header">
+    <div class="header-content">
+      <div class="brand">
+        <div class="device-badge">QKISAN-v2.0 (ResNet18 + PennyLane)</div>
+        <h1>KISANQ – SMART CROP DOCTOR</h1>
+        <div class="brand-sub">కిసాన్ క్యూ – హైబ్రిడ్ క్వాంటం-క్లాసికల్ పంట & పూల వ్యాధి నిర్ధారణ యంత్రం</div>
+      </div>
+      <div class="header-controls">
+        <div class="sensor-pill" id="sensor-pill">
+          <span class="pulse-dot"></span>
+          <span id="header-temp">28.5°C</span> | <span id="header-humidity">74% RH</span> | 
+          <span class="risk-badge risk-moderate" id="header-risk">Fungal Risk: Moderate</span>
+        </div>
+        <button class="lang-toggle-btn" id="btn-toggle-lang" onclick="toggleLanguage()">
+          🌐 <span id="lang-label">తెలుగు / English (Girl Voice)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Physical Buttons Bar (Simulating the Hardware Device) -->
+  <section class="hardware-buttons-bar">
+    <div class="bar-container">
+      <div class="bar-title">PHYSICAL DEVICE HARDWARE CONTROLS (భౌతిక పరికర బటన్లు)</div>
+      <div class="hardware-buttons-grid">
+        <button class="hw-btn hw-btn-scan" id="hw-scan-trigger" onclick="triggerScan()">
+          <span class="btn-icon">🔘</span>
+          <span class="btn-label-en">SCAN LEAF</span>
+          <span class="btn-label-te">ఆకును స్కాన్ చేయండి</span>
+        </button>
+
+        <button class="hw-btn hw-btn-secondary" id="crop-toggle-btn" onclick="openCropSelector()">
+          <span class="btn-icon">🌾</span>
+          <span class="btn-label-en" id="active-crop-name-en">CROP: MANGO</span>
+          <span class="btn-label-te" id="active-crop-name-te">పంట: మామిడి (మార్చండి)</span>
+        </button>
+
+        <button class="hw-btn hw-btn-speak" id="hw-speak-btn" onclick="speakCurrentResult()">
+          <span class="btn-icon">👧🔊</span>
+          <span class="btn-label-en">SPEAK RESULT (GIRL VOICE)</span>
+          <span class="btn-label-te">ఫలితాన్ని వినండి</span>
+        </button>
+
+        <button class="hw-btn hw-btn-secondary" onclick="openHistoryModal()">
+          <span class="btn-icon">📋</span>
+          <span class="btn-label-en">VIEW HISTORY</span>
+          <span class="btn-label-te">గత రికార్డులు</span>
+        </button>
+
+        <button class="hw-btn hw-btn-secondary" onclick="openBenchmarkModal()">
+          <span class="btn-icon">⚛️</span>
+          <span class="btn-label-en">PENNYLANE BENCHMARK</span>
+          <span class="btn-label-te">క్వాంటం పోలిక</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Workspace -->
+  <main class="main-container">
+
+    <!-- Left Column: Scanner, Camera Feed & Character LCD -->
+    <div class="column left-col">
+      
+      <!-- Character LCD Display Simulation -->
+      <div class="lcd-housing">
+        <div class="lcd-bezel">
+          <div class="lcd-header-label">16x2 CHARACTER LCD (SUNLIGHT-READABLE)</div>
+          <div class="lcd-screen" id="lcd-display">
+            <div class="lcd-line" id="lcd-line1">KISANQ RESNET18</div>
+            <div class="lcd-line" id="lcd-line2">PENNYLANE READY</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Leaf Scanner Chamber -->
+      <div class="scanner-card">
+        <div class="card-title-bar">
+          <h3>📷 LEAF OPTICAL SCANNER (ఆప్టికల్ స్కానర్)</h3>
+          <div class="light-toggle">
+            <label class="switch">
+              <input type="checkbox" id="led-illumination-toggle" checked onchange="toggleIllumination()">
+              <span class="slider round"></span>
+            </label>
+            <span class="toggle-text">5000K LED Ring</span>
+          </div>
+        </div>
+
+        <div class="camera-viewport-container">
+          <video id="webcam-feed" autoplay playsinline muted></video>
+          <canvas id="capture-canvas" style="display:none;"></canvas>
+          <img id="static-preview-img" style="display:none;" alt="Leaf Preview">
+          
+          <!-- Optical Targeting Reticle -->
+          <div class="reticle" id="scanner-reticle">
+            <div class="reticle-corner tl"></div>
+            <div class="reticle-corner tr"></div>
+            <div class="reticle-corner bl"></div>
+            <div class="reticle-corner br"></div>
+            <div class="reticle-center">+</div>
+            <div class="reticle-guide-text" id="reticle-guide-text">ALIGN LEAF OR FLOWER HERE</div>
+          </div>
+
+          <!-- Scanning Scanline Effect -->
+          <div class="scanner-scanline" id="scanline" style="display:none;"></div>
+        </div>
+
+        <!-- Scanner Source Selector -->
+        <div class="scanner-actions">
+          <button class="action-btn" onclick="startWebcam()">📹 Start Live Camera</button>
+          <label class="action-btn upload-btn">
+            📁 Upload Leaf Photo
+            <input type="file" id="file-upload-input" accept="image/*" style="display:none;" onchange="handleFileUpload(event)">
+          </label>
+        </div>
+
+        <!-- Multi-Crop Quick Chips (Mango & Hibiscus Datasets) -->
+        <div class="dataset-samples-box">
+          <div class="samples-header">
+            <span>⚡ MULTI-CROP & FLOWER DATASET QUICK TEST:</span>
+            <small>(Live Test Leaves)</small>
+          </div>
+          <div class="samples-grid">
+            <button class="sample-chip chip-healthy" onclick="testDatasetSample('healthy_sample_1.jpg', 'Healthy', 'mango')">
+              🥭 Mango Healthy
+            </button>
+            <button class="sample-chip chip-anthracnose" onclick="testDatasetSample('anthracnose_sample_1.jpg', 'Anthracnose', 'mango')">
+              🥭 Mango Anthracnose
+            </button>
+            <button class="sample-chip chip-bacterial" onclick="testDatasetSample('bacterial_canker_sample_1.jpg', 'Bacterial Canker', 'mango')">
+              🥭 Mango Bacterial Canker
+            </button>
+            <button class="sample-chip chip-powdery" onclick="testDatasetSample('hibiscus_healthy_sample_1.jpg', 'Healthy', 'hibiscus')">
+              🌺 Hibiscus Healthy
+            </button>
+            <button class="sample-chip chip-anthracnose" onclick="testDatasetSample('hibiscus_diseased_sample_1.jpg', 'Leaf Spot / Blight', 'hibiscus')">
+              🌺 Hibiscus Blight
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Environmental Microclimate Card -->
+      <div class="sensor-card">
+        <div class="card-title-bar">
+          <h3>🌡️ ENVIRONMENTAL SENSORS (వాతావరణ సమాచారం)</h3>
+          <span class="source-tag">DHT22 + NDVI</span>
+        </div>
+        <div class="sensor-readout-grid">
+          <div class="sensor-metric">
+            <span class="metric-icon">🌡️</span>
+            <span class="metric-val" id="metric-temp">28.5 °C</span>
+            <span class="metric-lbl">Ambient Temp</span>
+          </div>
+          <div class="sensor-metric">
+            <span class="metric-icon">💧</span>
+            <span class="metric-val" id="metric-humidity">74.0 %</span>
+            <span class="metric-lbl">Rel Humidity</span>
+          </div>
+          <div class="sensor-metric">
+            <span class="metric-icon">🌱</span>
+            <span class="metric-val" id="metric-soil">45.0 %</span>
+            <span class="metric-lbl">Soil Moisture</span>
+          </div>
+          <div class="sensor-metric">
+            <span class="metric-icon">🛰️</span>
+            <span class="metric-val" id="metric-ndvi">0.72</span>
+            <span class="metric-lbl">Canopy NDVI</span>
+          </div>
+        </div>
+        <div class="microclimate-advisory" id="microclimate-desc">
+          <strong>Microclimate Disease Risk Assessment:</strong> Ambient conditions monitored for fungal sporulation. Keep foliage dry.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Hybrid Prediction, Telugu Voice Assistant & Quantum Circuit -->
+    <div class="column right-col">
+
+      <!-- Diagnosis & Bilingual Voice Card -->
+      <div class="diagnosis-card" id="diagnosis-card">
+        <div class="card-title-bar">
+          <h3>🌿 DISEASE DIAGNOSIS & GIRL VOICE ADVISORY (వ్యాధి నిర్ధారణ)</h3>
+          <span class="status-indicator-badge badge-idle" id="diagnosis-status-badge">AWAITING SCAN</span>
+        </div>
+
+        <div class="diagnosis-body">
+          <div class="diagnosis-main-row">
+            <div class="disease-title-group">
+              <div class="crop-tag" id="current-crop-display">CROP: MANGO (మామిడి)</div>
+              <h2 class="disease-name" id="disease-name-display">Scan a leaf to begin</h2>
+              <div class="disease-name-te" id="disease-name-te">ఫలితం ఇక్కడ కనిపిస్తుంది</div>
+            </div>
+            <div class="confidence-box" id="confidence-box">
+              <div class="conf-circle">
+                <span class="conf-num" id="confidence-percentage">--</span>
+                <span class="conf-pct">%</span>
+              </div>
+              <span class="conf-label">PennyLane VQC</span>
+            </div>
+          </div>
+
+          <!-- Low Confidence Warning Alert -->
+          <div class="uncertainty-banner" id="uncertainty-banner" style="display:none;">
+            ⚠️ <strong>Low Confidence Alert / తక్కువ ఖచ్చితత్వం:</strong> Model confidence is below 60%. Do not treat as confirmed diagnosis. Re-scan in uniform lighting or consult agricultural extension specialist.
+          </div>
+
+          <!-- Spoken Audio Player Bar with Girl Voice -->
+          <div class="audio-player-bar">
+            <div class="audio-info">
+              <span class="speaker-icon">👧📢</span>
+              <span id="speech-summary-text">Click 'SPEAK RESULT' to listen to the friendly girl voice in English or Telugu!</span>
+            </div>
+            <div class="audio-btns">
+              <button class="audio-btn audio-btn-en" onclick="playAudio('en')">👧🔊 English (Girl Voice)</button>
+              <button class="audio-btn audio-btn-te" onclick="playAudio('te')">🔊 తెలుగు (Telugu)</button>
+            </div>
+          </div>
+
+          <!-- Structured Next Steps for Farmer -->
+          <div class="advisory-steps-box">
+            <h4>📋 SAFE RECOMMENDED NEXT STEPS (రైతు తీసుకోవలసిన జాగ్రత్తలు):</h4>
+            <ul class="steps-list" id="advisory-steps-list">
+              <li>Place a clean leaf flat under the camera hood.</li>
+              <li>Ensure the LED illumination ring is turned on for uniform light.</li>
+              <li>Press the physical green SCAN LEAF button.</li>
+            </ul>
+          </div>
+          <div class="expert-disclaimer">
+            ℹ️ <em>Certified guidance: Never apply unverified pesticides without consulting your local Krishi Vigyan Kendra (KVK) agricultural expert.</em>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4-Qubit Variational Quantum Circuit (VQC) Visualizer (PennyLane) -->
+      <div class="quantum-card">
+        <div class="card-title-bar">
+          <h3>⚛️ 4-QUBIT PENNYLANE VQC SIMULATOR (default.qubit)</h3>
+          <span class="qiskit-badge" style="background:#0f3f2e; color:#6ee7b7;">PennyLane 0.45 Simulator</span>
+        </div>
+        <div class="quantum-body">
+          
+          <!-- Quantum Circuit Architecture Pipeline -->
+          <div class="pipeline-flow">
+            <div class="pipe-step">
+              <span class="step-num">1</span>
+              <span class="step-title">Leaf Image</span>
+              <span class="step-dim">224x224 RGB</span>
+            </div>
+            <div class="pipe-arrow">➔</div>
+            <div class="pipe-step">
+              <span class="step-num">2</span>
+              <span class="step-title">ResNet18</span>
+              <span class="step-dim">512-D Residual</span>
+            </div>
+            <div class="pipe-arrow">➔</div>
+            <div class="pipe-step">
+              <span class="step-num">3</span>
+              <span class="step-title">PCA Reducer</span>
+              <span class="step-dim">4-D [-π, π]</span>
+            </div>
+            <div class="pipe-arrow">➔</div>
+            <div class="pipe-step highlight-step">
+              <span class="step-num">4</span>
+              <span class="step-title">PennyLane VQC</span>
+              <span class="step-dim">RY + CNOT</span>
+            </div>
+            <div class="pipe-arrow">➔</div>
+            <div class="pipe-step">
+              <span class="step-num">5</span>
+              <span class="step-title">Pauli-Z &lt;Z&gt;</span>
+              <span class="step-dim">4 Observables</span>
+            </div>
+            <div class="pipe-arrow">➔</div>
+            <div class="pipe-step">
+              <span class="step-num">6</span>
+              <span class="step-title">Decision</span>
+              <span class="step-dim">Softmax</span>
+            </div>
+          </div>
+
+          <!-- Qubit Register Display -->
+          <div class="qubits-register-grid">
+            <div class="qubit-strip">
+              <span class="qubit-tag">|q₀⟩</span>
+              <div class="qubit-bar"><div class="qubit-fill" id="q0-fill" style="width: 50%;"></div></div>
+              <span class="qubit-val" id="q0-val">&lt;Z₀&gt;: 0.00</span>
+            </div>
+            <div class="qubit-strip">
+              <span class="qubit-tag">|q₁⟩</span>
+              <div class="qubit-bar"><div class="qubit-fill" id="q1-fill" style="width: 50%;"></div></div>
+              <span class="qubit-val" id="q1-val">&lt;Z₁&gt;: 0.00</span>
+            </div>
+            <div class="qubit-strip">
+              <span class="qubit-tag">|q₂⟩</span>
+              <div class="qubit-bar"><div class="qubit-fill" id="q2-fill" style="width: 50%;"></div></div>
+              <span class="qubit-val" id="q2-val">&lt;Z₂&gt;: 0.00</span>
+            </div>
+            <div class="qubit-strip">
+              <span class="qubit-tag">|q₃⟩</span>
+              <div class="qubit-bar"><div class="qubit-fill" id="q3-fill" style="width: 50%;"></div></div>
+              <span class="qubit-val" id="q3-val">&lt;Z₃&gt;: 0.00</span>
+            </div>
+          </div>
+
+          <!-- PCA Angle Readouts -->
+          <div class="pca-angles-row">
+            <span>PCA Angles (RY Rotations):</span>
+            <span class="angle-badge" id="angle-0">θ₀: 0.00 rad</span>
+            <span class="angle-badge" id="angle-1">θ₁: 0.00 rad</span>
+            <span class="angle-badge" id="angle-2">θ₂: 0.00 rad</span>
+            <span class="angle-badge" id="angle-3">θ₃: 0.00 rad</span>
+          </div>
+
+          <!-- Circuit ASCII Accordion -->
+          <details class="circuit-details" open>
+            <summary>View Executable PennyLane Quantum Circuit Diagram</summary>
+            <pre class="circuit-pre" id="circuit-ascii-box">
+0: ──RY(x₀)──╭●───────╭X──RY(θ₀)──RZ(θ₄)─┤  <Z>
+1: ──RY(x₁)──╰X─╭●────│───RY(θ₁)──RZ(θ₅)─┤  <Z>
+2: ──RY(x₂)────╰X─╭●─│───RY(θ₂)──RZ(θ₆)─┤  <Z>
+3: ──RY(x₃)────────╰X─╰●──RY(θ₃)──RZ(θ₇)─┤  <Z>
+            </pre>
+          </details>
+
+        </div>
+      </div>
+
+      <!-- Live Side-by-Side Model Comparison -->
+      <div class="comparison-card">
+        <div class="card-title-bar">
+          <h3>⚖️ RESNET18 CLASSICAL vs. PENNYLANE 4-QUBIT VQC</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Attribute</th>
+                <th>Classical ResNet18</th>
+                <th>Hybrid ResNet18 + PennyLane VQC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Backbone Architecture</strong></td>
+                <td>Deep Residual CNN (ResNet18)</td>
+                <td>ResNet18 + PennyLane 4-Qubit Simulator</td>
+              </tr>
+              <tr>
+                <td><strong>Input Features</strong></td>
+                <td>512 Residual Dimensions</td>
+                <td>4 PCA Angles in [-π, π]</td>
+              </tr>
+              <tr>
+                <td><strong>Current Prediction</strong></td>
+                <td id="comp-c-pred">--</td>
+                <td id="comp-q-pred">--</td>
+              </tr>
+              <tr>
+                <td><strong>Confidence Score</strong></td>
+                <td id="comp-c-conf">--</td>
+                <td id="comp-q-conf">--</td>
+              </tr>
+              <tr>
+                <td><strong>Quantum Head Params</strong></td>
+                <td>65,664 parameters</td>
+                <td><strong>23 parameters</strong> (2,800x reduction)</td>
+              </tr>
+              <tr>
+                <td><strong>Inference Latency</strong></td>
+                <td id="comp-c-lat">--</td>
+                <td id="comp-q-lat">--</td>
+              </tr>
+              <tr>
+                <td><strong>Test Accuracy</strong></td>
+                <td>100.0%</td>
+                <td><strong>95.65%</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="scientific-note">
+          🔬 <strong>Scientific Honesty Note:</strong> Quantum simulation runs via PennyLane default.qubit. No quantum supremacy is claimed. The hybrid architecture demonstrates how classical ResNet18 residual embeddings can interface with PennyLane quantum circuits for multi-crop agriculture.
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Crop Selector Modal -->
+  <div class="modal" id="crop-selector-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🌾 Select Plant / Flower Type (పంట లేదా పూల రకం)</h3>
+        <button class="modal-close" onclick="closeModal('crop-selector-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="crop-select-grid">
+          <div class="crop-select-card" onclick="selectCrop('mango')">
+            <span class="crop-icon">🥭</span>
+            <h4>Mango (మామిడి)</h4>
+            <p>Diagnoses: Healthy, Anthracnose, Bacterial Canker</p>
+          </div>
+          <div class="crop-select-card" onclick="selectCrop('hibiscus')">
+            <span class="crop-icon">🌺</span>
+            <h4>Hibiscus (మందార)</h4>
+            <p>Diagnoses: Healthy, Leaf Spot / Blight</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div class="modal" id="history-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📋 Recent Leaf Scans (గత రికార్డులు)</h3>
+        <button class="modal-close" onclick="closeModal('history-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="history-modal-body">
+        <p>Loading records...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quantum Benchmark Modal -->
+  <div class="modal" id="benchmark-modal">
+    <div class="modal-content modal-wide">
+      <div class="modal-header">
+        <h3>⚛️ Scientific Benchmark Reports & Charts</h3>
+        <button class="modal-close" onclick="closeModal('benchmark-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="report-grid">
+          <div class="report-card">
+            <h4>Benchmark Comparison Chart</h4>
+            <img src="/static/reports/classical_vs_quantum_benchmark.png" alt="Benchmark Plot" class="report-img">
+          </div>
+          <div class="report-card">
+            <h4>Hybrid VQC Confusion Matrix</h4>
+            <img src="/static/reports/quantum_confusion_matrix.png" alt="VQC Confusion Matrix" class="report-img">
+          </div>
+          <div class="report-card">
+            <h4>Classical CNN Training Curves</h4>
+            <img src="/static/reports/classical_training_curves.png" alt="Training Curves" class="report-img">
+          </div>
+          <div class="report-card">
+            <h4>VQC Loss Optimization</h4>
+            <img src="/static/reports/quantum_training_loss.png" alt="VQC Loss Curve" class="report-img">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <audio id="audio-player" style="display:none;"></audio>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

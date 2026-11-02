@@ -1,0 +1,977 @@
+/* KisanQ Modern Agricultural & Quantum Theme */
+:root {
+  --bg-primary: #0a0f0d;
+  --bg-surface: #121a16;
+  --bg-elevated: #1a2520;
+  --border-color: #273830;
+  --text-main: #e8f0ec;
+  --text-muted: #8fa599;
+  
+  --color-green: #10b981;
+  --color-green-dark: #065f46;
+  --color-amber: #f59e0b;
+  --color-red: #ef4444;
+  --color-purple: #8b5cf6;
+  --color-cyan: #06b6d4;
+
+  --lcd-bg: #9ec93b;
+  --lcd-text: #1b2e04;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Chakra Petch', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+  --font-telugu: 'Mandali', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* Header */
+.device-header {
+  background: linear-gradient(180deg, #16241e 0%, var(--bg-surface) 100%);
+  border-bottom: 2px solid var(--border-color);
+  padding: 12px 24px;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.brand .device-badge {
+  display: inline-block;
+  background: var(--color-green-dark);
+  color: #a7f3d0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.brand h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #34d399;
+}
+
+.brand-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sensor-pill {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-green);
+  box-shadow: 0 0 8px var(--color-green);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.risk-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.risk-low { background: #064e3b; color: #6ee7b7; }
+.risk-moderate { background: #78350f; color: #fde68a; }
+.risk-high { background: #7f1d1d; color: #fca5a5; }
+
+.lang-toggle-btn {
+  background: #23372c;
+  color: #6ee7b7;
+  border: 1px solid #34d399;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lang-toggle-btn:hover {
+  background: #34d399;
+  color: #064e3b;
+}
+
+/* Hardware Buttons Bar */
+.hardware-buttons-bar {
+  background: #0d1512;
+  border-bottom: 2px solid #203129;
+  padding: 16px 24px;
+}
+
+.bar-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.bar-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.hardware-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.hw-btn {
+  background: #1e2d26;
+  border: 2px solid #33493e;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--text-main);
+  box-shadow: 0 4px 0 #131e19;
+  transition: all 0.1s ease;
+  user-select: none;
+}
+
+.hw-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #131e19;
+}
+
+.hw-btn-scan {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  border-color: #34d399;
+  color: #042f22;
+  box-shadow: 0 4px 0 #064e3b;
+}
+
+.hw-btn-scan:active {
+  box-shadow: 0 1px 0 #064e3b;
+}
+
+.hw-btn-speak {
+  background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+  border-color: #a78bfa;
+  color: #ffffff;
+  box-shadow: 0 4px 0 #4c1d95;
+}
+
+.hw-btn .btn-icon {
+  font-size: 20px;
+}
+
+.hw-btn .btn-label-en {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+
+.hw-btn .btn-label-te {
+  font-family: var(--font-telugu);
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Main Layout */
+.main-container {
+  max-width: 1400px;
+  margin: 20px auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .main-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* LCD Housing */
+.lcd-housing {
+  background: #252b27;
+  border: 4px solid #3c453f;
+  border-radius: 8px;
+  padding: 14px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+}
+
+.lcd-header-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #a4b3aa;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.lcd-screen {
+  background: var(--lcd-bg);
+  color: var(--lcd-text);
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  padding: 12px 16px;
+  border-radius: 4px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
+  line-height: 1.35;
+  letter-spacing: 2px;
+  border: 2px solid #7ea827;
+}
+
+/* Scanner Card */
+.scanner-card, .sensor-card, .diagnosis-card, .quantum-card, .comparison-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-title-bar {
+  background: #17241f;
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title-bar h3 {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: #34d399;
+  letter-spacing: 0.5px;
+}
+
+.light-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 22px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #374151;
+  transition: .3s;
+  border-radius: 22px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider { background-color: var(--color-green); }
+input:checked + .slider:before { transform: translateX(16px); }
+
+.toggle-text {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.camera-viewport-container {
+  position: relative;
+  width: 100%;
+  height: 340px;
+  background: #000;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#webcam-feed, #static-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Reticle */
+.reticle {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  pointer-events: none;
+  border: 1px dashed rgba(52, 211, 153, 0.4);
+}
+
+.reticle-corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #34d399;
+}
+.reticle-corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+.reticle-corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+.reticle-corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+.reticle-corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+.reticle-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: #34d399;
+  font-size: 20px;
+  opacity: 0.6;
+}
+
+.reticle-guide-text {
+  position: absolute;
+  bottom: 8px; width: 100%;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #34d399;
+  letter-spacing: 1px;
+}
+
+.scanner-scanline {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 4px;
+  background: linear-gradient(90deg, transparent, #34d399, transparent);
+  box-shadow: 0 0 12px #34d399;
+  animation: scanAnim 1.8s infinite linear;
+}
+
+@keyframes scanAnim {
+  0% { top: 0%; }
+  50% { top: 96%; }
+  100% { top: 0%; }
+}
+
+.scanner-actions {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #16221c;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.action-btn {
+  flex: 1;
+  background: #23372c;
+  color: #a7f3d0;
+  border: 1px solid #34d399;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: #34d399;
+  color: #064e3b;
+}
+
+/* Dataset Quick Chips */
+.dataset-samples-box {
+  padding: 12px 16px;
+  background: #0f1713;
+}
+
+.samples-header {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: #a7f3d0;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.samples-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sample-chip {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.chip-healthy { background: #064e3b; color: #a7f3d0; border-color: #059669; }
+.chip-anthracnose { background: #78350f; color: #fde68a; border-color: #d97706; }
+.chip-bacterial { background: #7f1d1d; color: #fca5a5; border-color: #dc2626; }
+.chip-powdery { background: #1e3a8a; color: #bfdbfe; border-color: #2563eb; }
+
+.sample-chip:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+}
+
+/* Sensor Readout */
+.sensor-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.sensor-metric {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.metric-icon { font-size: 18px; display: block; margin-bottom: 2px; }
+.metric-val { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: #6ee7b7; display: block; }
+.metric-lbl { font-size: 11px; color: var(--text-muted); }
+
+.microclimate-advisory {
+  margin: 0 16px 14px;
+  padding: 10px 12px;
+  background: #1b2821;
+  border-left: 3px solid var(--color-amber);
+  border-radius: 4px;
+  font-size: 12px;
+  color: #fde68a;
+}
+
+/* Diagnosis Card */
+.diagnosis-body {
+  padding: 18px 20px;
+}
+
+.diagnosis-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.crop-tag {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #34d399;
+  letter-spacing: 1px;
+}
+
+.disease-name {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin: 2px 0;
+}
+
+.disease-name-te {
+  font-family: var(--font-telugu);
+  font-size: 20px;
+  color: #a7f3d0;
+}
+
+.confidence-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.conf-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 4px solid var(--color-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f241a;
+}
+
+.conf-num { font-size: 22px; font-weight: 800; color: #34d399; }
+.conf-pct { font-size: 14px; color: #a7f3d0; }
+.conf-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+.status-indicator-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+.badge-idle { background: #374151; color: #9ca3af; }
+.badge-healthy { background: #065f46; color: #a7f3d0; }
+.badge-disease { background: #991b1b; color: #fecaca; }
+
+.uncertainty-banner {
+  background: #78350f;
+  color: #fef3c7;
+  border: 1px solid #f59e0b;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* Audio Player Bar */
+.audio-player-bar {
+  background: #1e2e25;
+  border: 1px solid #2d4538;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.audio-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #e5e7eb;
+}
+
+.audio-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.audio-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.audio-btn-te { background: #059669; color: white; }
+.audio-btn-te:hover { background: #10b981; }
+
+.audio-btn-en { background: #6d28d9; color: white; }
+.audio-btn-en:hover { background: #8b5cf6; }
+
+/* Advisory Steps */
+.advisory-steps-box {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.advisory-steps-box h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #34d399;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.steps-list {
+  padding-left: 20px;
+  font-size: 13px;
+  color: #d1d5db;
+}
+
+.steps-list li {
+  margin-bottom: 6px;
+}
+
+.expert-disclaimer {
+  font-size: 12px;
+  color: #9ca3af;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 8px;
+}
+
+/* Quantum Circuit Card */
+.quantum-card .quantum-body {
+  padding: 16px 20px;
+}
+
+.qiskit-badge {
+  background: #3b1d60;
+  color: #c4b5fd;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.pipeline-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #141f19;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.pipe-step {
+  text-align: center;
+  min-width: 80px;
+}
+
+.step-num {
+  display: block;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  border-radius: 50%;
+  background: #273830;
+  color: #34d399;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  margin: 0 auto 4px;
+}
+
+.step-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.step-dim {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.highlight-step .step-num {
+  background: var(--color-purple);
+  color: white;
+}
+.highlight-step .step-title {
+  color: #c4b5fd;
+}
+
+.pipe-arrow {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.qubits-register-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.qubit-strip {
+  background: var(--bg-elevated);
+  border: 1px solid #2d4538;
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qubit-tag {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: #c4b5fd;
+  min-width: 32px;
+}
+
+.qubit-bar {
+  flex: 1;
+  height: 8px;
+  background: #111827;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.qubit-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #34d399);
+  transition: width 0.3s;
+}
+
+.qubit-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #a7f3d0;
+  min-width: 80px;
+  text-align: right;
+}
+
+.pca-angles-row {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.angle-badge {
+  background: #1e2b24;
+  border: 1px solid #34d399;
+  color: #34d399;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.circuit-details summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #c4b5fd;
+  margin-bottom: 6px;
+}
+
+.circuit-pre {
+  background: #090e0c;
+  color: #93c5fd;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 10px;
+  border-radius: 6px;
+  overflow-x: auto;
+  border: 1px solid #1f2937;
+}
+
+/* Comparison Table */
+.comparison-card {
+  padding: 16px 20px;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.comparison-table th, .comparison-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.comparison-table th {
+  background: #16241e;
+  color: #a7f3d0;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.scientific-note {
+  background: #18241f;
+  border-left: 3px solid var(--color-purple);
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #d8b4fe;
+  border-radius: 4px;
+}
+
+/* Modals */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+  background: #121a16;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.modal-wide { max-width: 950px; }
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.report-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.report-card h4 {
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: #a7f3d0;
+}
+
+.report-img {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #374151;
+}
+
+/* Crop Select Modal Cards */
+.crop-select-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.crop-select-card {
+  background: var(--bg-elevated);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.crop-select-card:hover {
+  border-color: var(--color-green);
+  background: #192b22;
+  transform: translateY(-2px);
+}
+
+.crop-icon {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.crop-select-card h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #34d399;
+  margin-bottom: 4px;
+}
+
+.crop-select-card p {
+  font-size: 11px;
+  color: var(--text-muted);
+}

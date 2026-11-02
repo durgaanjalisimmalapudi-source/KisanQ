@@ -1,0 +1,30 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Temporary webcam/live scan captures (keep reports and models)
+artifacts/scan_*
+
+# SQLite journal
+database/*.db-journal
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
