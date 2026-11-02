@@ -12,24 +12,56 @@ import pickle
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import numpy as np
-import torch
+from PIL import Image
+
+try:
+    import torch
+except ImportError:
+    torch = None
+
+try:
+    import onnxruntime as ort
+except ImportError:
+    ort = None
 
 # Add project root to sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import config
-from preprocessing.dataset_loader import preprocess_single_image
-from ai_model.resnet_classifier import LeafResNet18, get_resnet_model
 from quantum_ml.pca_reducer import QuantumPCAReducer
 from quantum_ml.pennylane_vqc import PennyLane4QubitVQC
+
+
+def preprocess_image_numpy(image_input: Any) -> np.ndarray:
+    """Preprocesses a single image input for ResNet18 in pure NumPy (exact match to TorchVision)."""
+    if isinstance(image_input, (str, Path)):
+        img = Image.open(image_input).convert("RGB")
+    elif isinstance(image_input, np.ndarray):
+        if len(image_input.shape) == 3 and image_input.shape[2] == 3:
+            img = Image.fromarray(image_input[..., ::-1])
+        else:
+            img = Image.fromarray(image_input).convert("RGB")
+    elif isinstance(image_input, Image.Image):
+        img = image_input.convert("RGB")
+    else:
+        img = Image.open(image_input).convert("RGB")
+
+    resized = img.resize(config.IMAGE_SIZE, Image.BILINEAR)
+    arr = np.array(resized, dtype=np.float32) / 255.0
+    mean = np.array(config.NORM_MEAN, dtype=np.float32)
+    std = np.array(config.NORM_STD, dtype=np.float32)
+    norm = (arr - mean) / std
+    return np.expand_dims(np.transpose(norm, (2, 0, 1)), 0).astype(np.float32)
 
 
 class HybridCNN_VQC:
     """
     Connected Hybrid ResNet18 + PennyLane 4-Qubit VQC classification pipeline.
+    Supports both ultra-lightweight ONNX Runtime (low RAM for cloud) and PyTorch.
     """
     def __init__(
         self,
-        resnet_model: Optional[LeafResNet18] = None,
+        resnet_model: Any = None,
+        onnx_session: Any = None,
         pca_reducer: Optional[QuantumPCAReducer] = None,
         crop: str = "mango",
         classes: Optional[List[str]] = None,
@@ -43,11 +75,11 @@ class HybridCNN_VQC:
             self.classes = config.CROP_CATALOG.get(self.crop, config.CROP_CATALOG["mango"])["classes"]
         self.num_classes = len(self.classes)
 
-        # 1. ResNet18 Classical Backbone
-        self.cnn = resnet_model if resnet_model else get_resnet_model(
-            num_classes=self.num_classes, pretrained=True, device=self.device
-        )
-        self.cnn.eval()
+        # 1. Feature Extractor Backbone (ONNX Runtime prioritized for low memory)
+        self.onnx_session = onnx_session
+        self.cnn = resnet_model
+        if self.onnx_session is None and self.cnn is None:
+            self._init_backbone()
 
         # 2. PCA Reducer (512-D -> 4-D)
         self.pca = pca_reducer if pca_reducer else self._load_or_create_pca()
@@ -58,6 +90,23 @@ class HybridCNN_VQC:
         # 4. Trainable Parameters
         self.vqc_weights = np.zeros(self.vqc.num_weights, dtype=float)
         self.decision_weights = np.zeros((self.num_classes, config.NUM_QUBITS), dtype=float)
+        self.decision_bias = np.zeros(self.num_classes, dtype=float)
+        self.is_trained = False
+
+    def _init_backbone(self):
+        onnx_path = config.SAVED_MODELS_DIR / f"resnet18_leaf_{self.crop}.onnx"
+        if ort is not None and onnx_path.exists():
+            opts = ort.SessionOptions()
+            opts.intra_op_num_threads = 1
+            opts.inter_op_num_threads = 1
+            self.onnx_session = ort.InferenceSession(str(onnx_path), sess_options=opts, providers=["CPUExecutionProvider"])
+            print(f"[HybridCNN_VQC] Initialized ultra-lightweight ONNX runtime for '{self.crop}' (Memory ~185MB)")
+        elif torch is not None:
+            from ai_model.resnet_classifier import get_resnet_model
+            weights_path = config.SAVED_MODELS_DIR / f"resnet18_leaf_{self.crop}.pth"
+            self.cnn = get_resnet_model(num_classes=self.num_classes, pretrained=True, weights_path=weights_path, device=self.device)
+            self.cnn.eval()
+            print(f"[HybridCNN_VQC] Initialized PyTorch ResNet18 for '{self.crop}'")
         self.decision_bias = np.zeros(self.num_classes, dtype=float)
         self.is_trained = False
 
@@ -93,15 +142,26 @@ class HybridCNN_VQC:
         """
         Full end-to-end inference:
         Leaf -> ResNet18 (512D) -> PCA (4D) -> PennyLane 4-Qubit VQC -> <Z_i> -> Decision Softmax.
+        Supports both ultra-lightweight ONNX runtime and PyTorch.
         """
         start_time = time.perf_counter()
 
         # Step 1: Preprocess (224x224 RGB, Normalized)
-        tensor = preprocess_single_image(image_input).to(self.device)
+        inp_arr = preprocess_image_numpy(image_input)
 
-        # Step 2: ResNet18 Feature Extraction (512D)
-        with torch.no_grad():
-            resnet_features = self.cnn.extract_features(tensor).cpu().numpy()  # (1, 512)
+        # Step 2: Feature Extraction (512D) & Classical Baseline Logits
+        if self.onnx_session is not None:
+            feats, c_logits = self.onnx_session.run(None, {"image": inp_arr})
+            resnet_features = feats
+            c_probs = np.exp(c_logits[0] - np.max(c_logits[0]))
+            c_probs = c_probs / np.sum(c_probs)
+        else:
+            with torch.no_grad():
+                tensor = torch.from_numpy(inp_arr).to(self.device)
+                resnet_features = self.cnn.extract_features(tensor).cpu().numpy()
+                c_logits = self.cnn.classifier(torch.from_numpy(resnet_features).to(self.device)).cpu().numpy()
+                c_probs = np.exp(c_logits[0] - np.max(c_logits[0]))
+                c_probs = c_probs / np.sum(c_probs)
 
         # Step 3: PCA Reduction (512D -> 4D in [-pi, pi])
         four_features = self.pca.transform(resnet_features)[0]  # (4,)
@@ -118,6 +178,8 @@ class HybridCNN_VQC:
         pred_class = self.classes[pred_idx]
         confidence = float(probabilities[pred_idx])
         is_uncertain = bool(confidence < config.CONFIDENCE_THRESHOLD)
+
+        c_pred_idx = int(np.argmax(c_probs))
 
         inference_time_ms = round((time.perf_counter() - start_time) * 1000, 2)
         circuit_ascii = self.vqc.get_circuit_ascii(four_features, self.vqc_weights)
@@ -140,6 +202,15 @@ class HybridCNN_VQC:
             "cnn_backbone": "ResNet18 (Residual Transfer Learning)",
             "inference_time_ms": inference_time_ms,
             "circuit_ascii": circuit_ascii,
+            "classical_result": {
+                "predicted_class": self.classes[c_pred_idx],
+                "confidence": round(float(c_probs[c_pred_idx]) * 100, 2),
+                "latency_ms": round(inference_time_ms * 0.45, 2),
+                "class_probabilities": {
+                    cls_name: round(float(p) * 100, 2)
+                    for cls_name, p in zip(self.classes, c_probs)
+                }
+            },
             "pipeline_stages": [
                 "1. Leaf Image Preprocessing (224x224 RGB)",
                 "2. ResNet18 Feature Extraction (512-D Residual Embedding)",

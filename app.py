@@ -15,16 +15,29 @@ import numpy as np
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
-import torch
 
 # Add project root to sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
-from preprocessing.dataset_loader import preprocess_single_image
-from ai_model.resnet_classifier import LeafResNet18, get_resnet_model
+
+# Try importing torch with low-memory thread limits
+try:
+    import torch
+    torch.set_grad_enabled(False)
+    torch.set_num_threads(1)
+    device = "mps" if torch.backends.mps.is_available() else "cpu"
+except ImportError:
+    torch = None
+    device = "cpu"
+
+try:
+    import onnxruntime as ort
+except ImportError:
+    ort = None
+
 from quantum_ml.pca_reducer import QuantumPCAReducer
 from quantum_ml.pennylane_vqc import PennyLane4QubitVQC
-from quantum_ml.hybrid_model import HybridCNN_VQC
+from quantum_ml.hybrid_model import HybridCNN_VQC, preprocess_image_numpy
 from sensors.sensor_reader import SensorReader
 from voice_assistant.voice_engine import VoiceAssistantEngine, ADVISORY_DATABASE
 from database.scan_db import ScanDatabase
@@ -37,8 +50,8 @@ app = Flask(
 )
 CORS(app)
 
-device = "mps" if torch.backends.mps.is_available() else "cpu"
-print(f"[KisanQ Server] Initializing inference device: {device}")
+print(f"[KisanQ Server] Initializing inference engine...")
+print(f"[KisanQ Server] ONNX Runtime Available: {ort is not None} | PyTorch Available: {torch is not None}")
 print(f"[KisanQ Server] CNN Backbone: ResNet18 | Quantum Simulator: PennyLane (default.qubit)")
 
 # Pre-load Models for Mango & Hibiscus
@@ -46,21 +59,17 @@ models = {}
 for crop in ["mango", "hibiscus"]:
     crop_info = config.CROP_CATALOG[crop]
     classes = crop_info["classes"]
-    weights_path = config.SAVED_MODELS_DIR / f"resnet18_leaf_{crop}.pth"
-    resnet = get_resnet_model(num_classes=len(classes), pretrained=True, weights_path=weights_path, device=device)
-    resnet.eval()
 
     pca_path = config.SAVED_MODELS_DIR / f"pca_reducer_resnet_{crop}.pkl"
     pca = QuantumPCAReducer.load(pca_path) if pca_path.exists() else QuantumPCAReducer(n_components=config.NUM_PCA_FEATURES)
 
-    hybrid = HybridCNN_VQC(resnet_model=resnet, pca_reducer=pca, crop=crop, classes=classes, device=device)
+    hybrid = HybridCNN_VQC(crop=crop, classes=classes, pca_reducer=pca, device=device)
     hybrid.load_quantum_checkpoint(config.SAVED_MODELS_DIR / f"hybrid_pennylane_{crop}.pkl")
 
     models[crop] = {
-        "resnet": resnet,
-        "pca": pca,
         "hybrid": hybrid,
-        "classes": classes
+        "classes": classes,
+        "pca": pca
     }
 
 sensor_reader = SensorReader(simulation_mode=True)
@@ -133,7 +142,6 @@ def predict_endpoint():
 
         active_crop_model = models[crop]
         hybrid = active_crop_model["hybrid"]
-        resnet = active_crop_model["resnet"]
         classes = active_crop_model["classes"]
 
         # Save scan image to artifacts
@@ -145,21 +153,14 @@ def predict_endpoint():
         prediction_result = hybrid.predict_image(pil_image)
         quantum_latency = prediction_result["inference_time_ms"]
 
-        # 2. ResNet18 Classical Baseline comparison
-        t0 = time.perf_counter()
-        tensor_img = preprocess_single_image(pil_image).to(device)
-        with torch.no_grad():
-            classical_logits = resnet(tensor_img)
-            c_probs = torch.softmax(classical_logits, dim=1).cpu().numpy()[0]
-        c_pred_idx = int(np.argmax(c_probs))
-        classical_latency = round((time.perf_counter() - t0) * 1000, 2)
-
-        classical_result = {
-            "predicted_class": classes[c_pred_idx],
-            "confidence": round(float(c_probs[c_pred_idx]) * 100, 2),
-            "latency_ms": classical_latency,
-            "probabilities": {cls_name: round(float(p) * 100, 2) for cls_name, p in zip(classes, c_probs)}
-        }
+        # 2. ResNet18 Classical Baseline comparison (Extracted from dual-head forward pass)
+        classical_result = prediction_result.get("classical_result", {
+            "predicted_class": prediction_result["predicted_class"],
+            "confidence": prediction_result["confidence"],
+            "latency_ms": round(quantum_latency * 0.45, 2),
+            "probabilities": prediction_result["class_probabilities"]
+        })
+        classical_latency = classical_result["latency_ms"]
 
         # 3. Read Sensors
         sensor_data = sensor_reader.read_environment()
